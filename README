@@ -1,0 +1,118 @@
+# Coitu Sebastian-Teodor 314CA
+
+    Pentru a realiza task-urile cerute voi folosi o structură principală
+"image" pentru imagini, ce conține toate detaliile și matricele aferente fie-
+cărei imagine: dimensiuni, dacă este sau nu o imagine încărcată ("loaded"),
+tipul ("img_type" este 1 pentru imaginea în tonuri de gri sau 2 pentru imaginea
+color), "magic_word" (cum este definit în enunț), matricea pentru imaginea în
+tonuri de gri ("grey"), matricea pentru imaginea color ("color") și doi vectori
+("x" și "y") în care se reține selecția. Pentru matricea imaginii color mai
+este definită o structură "rgb" care conține câmpuri pentru fiecare dintre cele
+trei culori (roșu, verde și albastru).
+    Programul se folosește de un loop "while" pentru a executa comenzile cât
+timp variabila de tip bool "run" are valoarea true. Pentru identificarea comen-
+zii se citește input-ul de la tastatură și se extrage primul cuvânt. În funcție
+de acel cuvânt se apelează subprogramul aferent. De asemenea, se face o copie a
+input-ului ("aux") care este folosită mai târziu pentru verificarea parametri-
+lor.
+    Cazurile pentru "command":
+    
+    1. LOAD: Înainte de apelarea subprogramului "LOAD" se extrage numele fișie-
+             rului. La intrarea în funcție, dacă este o imagine încărcată,
+             aceasta este eliberată, apoi se deschide fișierul corespunzător.
+             La citirea detaliilor imaginii se folosește funcția "comm_skip",
+             care trece peste comentarii, dacă există (dacă caracterul curent
+             este "#", atunci se citește toată linia într-un buffer, iar în caz
+             contrar se revine la poziția inițială). Variabila "var" este folo-
+             sită pentru citirea valorii maxime a pixelilor, dar cum ea este
+             definită în enunț ca fiind 255 pentru toate imaginile, aceasta nu
+             se va mai folosi ulterior. În continuare se iau cazurile de în-
+             cărcare a imaginii în funcție de tipul ei (sunt definite funcții
+             pentru fiecare caz). Dacă fișierul este binar, atunci după citirea
+             detaliilor, acesta se va redeschide corespunzător (inițial este
+             deschis normal). După încărcarea imaginii în memorie, se închide
+             fișierul și se afișează mesajul aferent.
+
+    2. SELECT: La intrarea în funcție se verifică dacă este o imagine încărca-
+               tă, iar în caz contrar se iese. În continuare se verifică para-
+               metrii conform cerinței. În funcție de aceștia se alege ulterior
+               tipul de select care se va realiza. În cazul selecției întregii
+               imagini se actualizează direct vectorii "x" și "y". În cazul
+               selecției în funcție de coordonate, dacă acestea îndeplinesc
+               condițiile cerute (se verifică cu ajutorul funcției "verify"),
+               atunci se actualizeză cei doi vectori prin intermediul funcției
+               "select_coordinates".
+
+    3. HISTOGRAM: La intrarea în funcție se verifică dacă este o imagine încăr-
+                  cată, iar în caz contrar se iese. Se verifică parametrii și
+                  tipul imaginii, iar dacă este nevoie se iese cu mesajul co-
+                  respunzător. Cu ajutorul unui vector ce reține frecvența va-
+                  lorilor pixelilor ("count"), se va realiza reducerea histo-
+                  gramei la numărul de bin-uri cerute conform cerinței (în
+                  funcția "reduction") și calcularea numărului de steluțe (în
+                  funcția "histogram_print"). În cea din urmă funcție se calcu-
+                  lează valoarea maximă din vectorul de frecvență, care va fi
+                  folosită în determinarea numărului de steluțe (folosind for-
+                  mula dată). După afișarea histogramei se eliberează memoria
+                  vectorului de frecvență, apoi se iese din subprogram.
+
+    4. EQUALIZE: La intrarea în funcție se verifică dacă este o imagine încăr-
+                 cată și tipul imaginii, iar dacă valorile nu corespund cerin-
+                 ței, atunci se iese. Va fi construit un vector de frecvență
+                 ("count") pentru valorile pixelilor, care va fi folosit în
+                 funcția "formula", unde se calculează noua valoare a fiecărui
+                 pixel (conform indicațiilor). La sfârșitul acestei funcții se
+                 face clamp-ul noii valori a pixelului. După actualizarea în-
+                 tregii imagini se eliberează memoria vectorului de frecvență
+                 și se iese cu mesajul corespunzător.
+
+    5. CROP: La intrarea în funcție se verifică dacă este o imagine încărcată,
+             iar în caz contrar se iese cu mesajul corespunzător. În continu-
+             are, în funcție de tipul imaginii, vor fi două cazuri (cele două
+             seamănă, dar pentru imaginea color se vor face trei atribuiri în
+             loc de una, pentru fiecare culoare). Variabilele "new_l" și
+             "new_c" rețin dimensiunile copiei ce va fi creată ("aux_arr"), în
+             funcție de selecție. În continuare se eliberează matricea princi-
+             pală și se realocă cu noile dimensiuni. După ce "aux_arr" este
+             copiată înapoi în matricea principală, se vor actualiza datele i-
+             maginii. Înainte de ieșirea din funcție se eliberează memoria pen-
+             tru "aux_arr".
+
+    6. APPLY: La intrarea în funcție se verifică dacă este o imagine încărcată,
+              parametrii și tipul imaginii, iar dacă ceva nu corespunde cerin-
+              ței, atunci se iese cu mesajul corespunzător. În funcție de para-
+              metru, se va aplica filtrul aferent: "EDGE", "SHARPEN", "BLUR",
+              "GAUSSIAN BLUR". Crearea filtrului se va face cu ajutorul func-
+              țiilor "kernel_build", "clamp" și "filter". Prima dintre ele
+              construiește kernelul de imagine în funcție de filtrul care va
+              urma aplicat. Funcția "filter" mai întâi face o copie a matricei
+              principale ("aux_arr"), apoi verifică selecția curentă pentru a
+              elimina marginile imaginii (dacă este nevoie). În continuare va
+              fi aplicat kernelul construit anterior pentru fiecare pixel din
+              selecție. După prelucrare se copiază matricea "aux_arr" înapoi în
+              cea principală, se eliberează memoria pentru kernel și "aux_arr"
+              și se iese din funcție. După aplicarea filtrului se afișează me-
+              sajul corespunzător și se iese din funcția "APPLY".
+
+    7. SAVE: La intrare în funcție se verifică dacă este o imagine încărcată și
+             tipul fișierului (ascii sau binar), dacă există. În caz contrar,
+             se iese cu mesajul corespunzător. Vor fi patru cazuri în funcție
+             de tipul fișierului și al imaginii, pentru fiecare dintre ele
+             fiind câte un subprogram ("save_a_grey", "save_b_grey",
+             "save_a_color" și "save_b_color"). Acestea sunt asemănătoare,
+             însă diferă modul de scriere în fișier (pentru ascii și binar) și
+             faptul că la imaginea color se scrie pentru fiecare culoare în
+             parte. Întâi se introduc în fișier detaliile imaginii, apoi ma-
+             tricea acesteia. După salvarea imaginii se inchide fișierul în ca-
+             re s-a scris, apoi se iese din funcție cu mesajul corespunzător.
+
+    8. EXIT: Această funcție produce finalizarea programului cu afișarea mesa-
+             jului corespunzător dacă nu există o imagine încărcată și cu eli-
+             berarea memoriei. Variabila "run" va primi valoarea false și se va
+             ieși din loop.
+            
+    9. Cazul în care se introduce o comandă invalidă va afișa pe ecran mesajul
+       corespunzător, fără a ieși din loop.
+
+    Se menționează faptul că nu a fost realizat cazul în care se primește co-
+manda "ROTATE".
